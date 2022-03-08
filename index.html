@@ -1,0 +1,127 @@
+<html lang="ja">
+<head>
+    <!-- BootstrapのCSS読み込み -->
+    <link href="bootstrap-5.1.3-dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- jQuery読み込み -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- BootstrapのJS読み込み -->
+    <script src="bootstrap-5.1.3-dist/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div class="block">
+
+        <div class="score_container">
+            スコア：
+            <span id="score">0</span>
+            <button type="button" class="btn_reset btn btn-primary" onClick="reset()">リセット</button>
+        </div>
+
+        <div class="theme_container">
+            <div id="current_theme">ここにお題が表示</div>
+        </div>
+
+        <div class="btn_container">
+            <button type="button" class="btn btn-primary" onClick="import_file('theme.txt', 'disp_theme', 'clear')">次のお題</button>
+            <button type="button" class="btn btn-primary" onClick="import_file('theme.txt', 'disp_theme', 'pass')">パス</button>
+        </div>
+    </div>
+</body>
+</html>
+
+<style>
+    body {
+        display:flex;
+        justify-content:center;
+        align-items:center;
+    }
+    .block {
+        width: 80%;
+        height: 60%;
+    }
+    .score_container {
+        margin-bottom: 40px;
+        font-size: 40px;
+    }
+    .score_container .btn_reset {
+        background: rgb(196, 205, 231);
+        font-size: 10px;
+        border: 0ch;
+        cursor:pointer;
+    }
+
+    .theme_container {
+        text-align: center;
+        background: rgb(228, 228, 228);
+        font-size: 100px;
+    }
+    .btn_container {
+        text-align: center;
+        font-size: 90px;
+    }
+    .btn_container .btn {
+        font-size: 45px;
+    }
+    .btn_container button {
+        display:inline-block;
+        text-align: center;
+        cursor:pointer;
+        margin: 150px 45px 0 45px;
+        width: 350px;
+        height: 25%;
+    }
+</style>
+
+<script type="text/javascript">
+    var score = 0;
+
+    function reset() {
+        score = 0;
+        document.getElementById("score").innerHTML = score;
+    }
+
+    function import_file(file_name, after_process, state) {
+        var xmlhr = new XMLHttpRequest();
+        xmlhr.onreadystatechange = function() {
+            if (xmlhr.readyState == 4 && xmlhr.status==200) {
+                var import_sentence = xmlhr.responseText;
+                var after_process = new Function("value", "return " + after_process + "(value)");    
+                after_process(import_sentence);
+            }
+        }
+        xmlhr.open("GET", file_name, true);
+        xmlhr.send(null);
+
+        if (state == "clear") {
+            score += 1;
+            document.getElementById("score").innerHTML = score;
+        }
+    }
+    
+    function disp_theme(import_sentence) {
+        var queue = new Array();
+        console.log(import_sentence)
+        if (import_sentence.match(/\r/)) var line = import_sentence.split("\r\n");
+        else line = import_sentence.split("\n");
+        var n_line = line.length;
+        for (var i = 0; i < n_line; i++) {
+            queue[i] = new Array();
+        }
+
+        var n_max_column = 0;
+        for (i = 0; i < n_line; i++) {
+            var column = line[i].split(",");
+            var n_column = column.length;
+            for (var j = 0; j < n_column; j++) {
+                queue[i][j] = column[j];
+            }
+            if (n_column > n_max_column) n_max_column = n_column;
+        }
+
+        var display_contents = "";
+        // j=0 iが変わる
+        theme_id = Math.floor(Math.random() * n_line);
+        display_contents = queue[theme_id][0];
+        document.getElementById("current_theme").innerHTML = display_contents;
+    }
+</script>
