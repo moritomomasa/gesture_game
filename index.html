@@ -13,6 +13,23 @@
 
 <body>
     <div class="block">
+        <!-- select theme -->
+        <div class="select_theme_container">
+            <div class="title">お題選択</div>
+            <div>
+                <input type="radio" id="animal" name="theme" value="animal" checked>
+                <label for="animal">動物　</label>
+
+                <input type="radio" id="vehicle" name="theme" value="vehicle">
+                <label for="vehicle">乗り物・建物　</label>
+
+                <input type="radio" id="sports" name="theme" value="sports">
+                <label for="sports">スポーツ　</label>
+
+                <input type="radio" id="work" name="theme" value="work">
+                <label for="work">職業　</label>
+            </div>
+        </div>
 
         <!-- score -->
         <div class="score_container">
@@ -29,8 +46,13 @@
 
         <!-- button -->
         <div class="btn_container">
-            <button type="button" class="btn btn-primary" onclick="import_file('theme.txt', 'next')">クリア</button>
-            <button type="button" class="btn btn-primary" onclick="import_file('theme.txt', 'pass')">パス</button>
+            <div class="start" id="start">
+                <button type="button" class="btn btn-primary" onclick="start()">スタート</button>
+            </div>
+            <div class="in_play" id="in_play">
+                <button type="button" class="btn btn-primary" onclick="import_file('next')">クリア</button>
+                <button type="button" class="btn btn-primary" id="pass" onclick="import_file('pass')">パス(3回)</button>
+            </div>
         </div>
 
     </div>
@@ -47,6 +69,14 @@
         width: 80%;
         height: 60%;
     }
+    .select_theme_container {
+        font-size: 20px;
+        margin-bottom: 30px;
+    }
+    .select_theme_container .title {
+        font-weight: bold;
+    }
+
     .score_container {
         margin-bottom: 40px;
         font-size: 40px;
@@ -67,6 +97,13 @@
         text-align: center;
         font-size: 90px;
     }
+    .btn_container {
+        text-align: center;
+        font-size: 90px;
+    }
+    .btn_container .in_play{
+        display: none;
+    }
     .btn_container .btn {
         font-size: 45px;
     }
@@ -82,13 +119,35 @@
 
 <script type="text/javascript">
     var score = 0;
+    var theme = 'animal'
+    var life = 3;
+
+    window.addEventListener('DOMContentLoaded', function(){
+    var input_genders = document.querySelectorAll("input[name=theme]");
+
+    for(var element of input_genders) {
+        element.addEventListener('change',function(){
+            if( this.checked ) {
+                theme = this.value;
+            }
+        });
+    }
+    });
 
     function reset() {
         score = 0;
+        life = 2;
         document.getElementById("score").innerHTML = score;
+        document.getElementById("current_theme").innerHTML = 'ここにお題が表示';
+
+        document.getElementById('start').style.display = 'block';
+        document.getElementById('in_play').style.display = 'none';
+        document.getElementById("pass").disabled = false;
+        document.getElementById("pass").innerHTML = "パス(" + (life+1) + "回)";
     }
 
-    function import_file(file_name, state) {
+    function import_file(state) {
+        file_name = 'theme/' + theme + '.txt';
         var xmlhr = new XMLHttpRequest();
         xmlhr.onreadystatechange = function() {
             if (xmlhr.readyState == 4 && xmlhr.status==200) {
@@ -102,6 +161,16 @@
         if (state == "next") {
             score += 1;
             document.getElementById("score").innerHTML = score;
+        }
+        else if (state == "pass") {
+            if (life > 0) {
+                life -= 1;
+                document.getElementById("pass").innerHTML = "パス(" + (life+1) + "回)";
+            }
+            else {
+                document.getElementById("pass").innerHTML = "パス(0回)";
+                document.getElementById("pass").disabled = true;
+            }
         }
     }
     
@@ -130,5 +199,12 @@
         theme_id = Math.floor(Math.random() * n_line);
         display_contents = queue[theme_id][0];
         document.getElementById("current_theme").innerHTML = display_contents;
+    }
+
+    function start() {
+        document.getElementById('start').style.display = 'none';
+        document.getElementById('in_play').style.display = 'block';
+
+        import_file('start')
     }
 </script>
